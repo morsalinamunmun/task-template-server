@@ -32,6 +32,7 @@ async function run() {
     //await client.connect();
 
     const userCollection = client.db("taskDB").collection("users");
+    const taskCollection = client.db("taskDB").collection("task");
 
     //jwt related api
     /* app.post('/jwt', async(req, res)=>{
@@ -74,6 +75,19 @@ async function run() {
         const result = await userCollection.insertOne(user);
         res.send(result);
     })
+
+    //add task
+    app.post('/task', async (req, res) => {
+        const result = await taskCollection.insertOne(req.body);
+        res.send(result);
+      })
+
+      //task get
+      app.get('/task/:email', async(req, res)=>{
+        const email = req.params.email;
+        const result = await taskCollection.findOne(email);
+        res.send(result);
+      })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
