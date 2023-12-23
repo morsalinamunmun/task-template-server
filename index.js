@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-//const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 //const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 //const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -34,28 +33,7 @@ async function run() {
     const userCollection = client.db("taskDB").collection("users");
     const taskCollection = client.db("taskDB").collection("task");
 
-    //jwt related api
-    /* app.post('/jwt', async(req, res)=>{
-        const user = req.body;
-        const token = jwt.sign(user, process.env.TOKEN_ACCESS, {expiresIn: '1h'});
-        res.send({token});
-      })
-  
-      //middlewares
-      const verifyToken = (req, res, next) =>{
-        //console.log("inside verify", req.headers.authorization)
-        if(!req.headers.authorization){
-          return res.status(401).send({message: 'unauthorized access'})
-        }
-        const token = req.headers.authorization.split(' ')[1];
-        jwt.verify(token, process.env.TOKEN_ACCESS, (err, decoded)=>{
-          if(err){
-            return res.status(401).send({message: 'unauthorized access'})
-          }
-          req.decoded = decoded;
-          next();
-        })
-      } */
+   
 
     //get user
     app.get('/users', async(req,res)=>{
@@ -85,9 +63,23 @@ async function run() {
       //task get
       app.get('/task/:email', async(req, res)=>{
         const email = req.params.email;
-        const result = await taskCollection.findOne(email);
+        const query ={email: email}
+        const user = taskCollection.find(query);
+        const result = await user.toArray();
         res.send(result);
       })
+
+      // app.get('/task', async (req, res) => {
+      //   if (req.user.email !== req.query.email) {
+      //     return res.status(403).send({ message: 'forbidden access' })
+      //   }
+      //   let query = {};
+      //   if (req.query?.email) {
+      //     query = { email: req.query.email }
+      //   }
+      //   const result = await requestCollection.find(query).toArray();
+      //   res.send(result);
+      // })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
