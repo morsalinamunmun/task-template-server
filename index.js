@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 //const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 //const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
@@ -33,53 +33,64 @@ async function run() {
     const userCollection = client.db("taskDB").collection("users");
     const taskCollection = client.db("taskDB").collection("task");
 
-   
+
 
     //get user
-    app.get('/users', async(req,res)=>{
-        //console.log(req.headers)
-        const result = await userCollection.find().toArray();
-        res.send(result);
+    app.get('/users', async (req, res) => {
+      //console.log(req.headers)
+      const result = await userCollection.find().toArray();
+      res.send(result);
     })
 
     //user 
-    app.post('/users', async(req, res) =>{
-        const user = req.body;
-        const query = {email: user.email}
-        const existingUser = await userCollection.findOne(query)
-        if(existingUser){
-          return res.send({message: 'user Already add', insertedId: null})
-        }
-        const result = await userCollection.insertOne(user);
-        res.send(result);
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email }
+      const existingUser = await userCollection.findOne(query)
+      if (existingUser) {
+        return res.send({ message: 'user Already add', insertedId: null })
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    })
+
+    //task get
+    app.get('/task', async (req, res) => {
+      const result = await taskCollection.find().toArray();
+      res.send(result);
     })
 
     //add task
     app.post('/task', async (req, res) => {
-        const result = await taskCollection.insertOne(req.body);
-        res.send(result);
-      })
+      const result = await taskCollection.insertOne(req.body);
+      res.send(result);
+    })
 
-      //task get
-      app.get('/task/:email', async(req, res)=>{
-        const email = req.params.email;
-        const query ={email: email}
-        const user = taskCollection.find(query);
-        const result = await user.toArray();
-        res.send(result);
-      })
+    //one task get
+    app.get('/task/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email }
+      const user = taskCollection.find(query);
+      const result = await user.toArray();
+      res.send(result);
+    })
 
-      // app.get('/task', async (req, res) => {
-      //   if (req.user.email !== req.query.email) {
-      //     return res.status(403).send({ message: 'forbidden access' })
-      //   }
-      //   let query = {};
-      //   if (req.query?.email) {
-      //     query = { email: req.query.email }
-      //   }
-      //   const result = await requestCollection.find(query).toArray();
-      //   res.send(result);
-      // })
+    // get specific data to id
+    app.get('/task/:id', async (req, res) => {
+      const id = req.params.id;
+      console.log(id)
+      const query = { _id: new ObjectId(id) };
+      const result = await taskCollection.findOne(query);
+      res.send(result);
+    })
+
+    //delete task
+    app.delete('/task/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await taskCollection.deleteOne(query);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -93,10 +104,10 @@ run().catch(console.dir);
 
 
 
-app.get('/', (req, res) =>{
-    res.send('task template is sitting')
+app.get('/', (req, res) => {
+  res.send('task template is sitting')
 })
 
-app.listen(port, () =>{
-    console.log(`task template is sitting on port ${port}`)
+app.listen(port, () => {
+  console.log(`task template is sitting on port ${port}`)
 })
